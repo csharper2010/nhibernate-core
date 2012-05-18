@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Collections.Generic;
 using NHibernate.Cfg;
 using NHibernate.Dialect.Function;
 using NHibernate.Driver;
@@ -33,6 +34,34 @@ namespace NHibernate.Dialect
             }
 
             return result.ToSqlString();
+        }
+
+        /// <summary>
+        /// Indicates whether the string fragment contains matching parenthesis
+        /// </summary>
+        /// <param name="statement"> the statement to evaluate</param>
+        /// <returns>true if the statment contains no parenthesis or an equal number of
+        ///  opening and closing parenthesis;otherwise false </returns>
+        private static bool HasMatchingParens(IEnumerable<char> statement)
+        {
+            //unmatched paren count
+            int unmatchedParen = 0;
+
+            //increment the counts based in the opening and closing parens in the statement
+            foreach (char item in statement)
+            {
+                switch (item)
+                {
+                    case '(':
+                        unmatchedParen++;
+                        break;
+                    case ')':
+                        unmatchedParen--;
+                        break;
+                }
+            }
+
+            return unmatchedParen == 0;
         }
     }
 }

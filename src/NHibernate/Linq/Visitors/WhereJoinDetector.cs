@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using NHibernate.Linq.ReWriters;
 using Remotion.Linq.Clauses;
+using Remotion.Linq.Clauses.Expressions;
 
 namespace NHibernate.Linq.Visitors
 {
@@ -269,6 +270,12 @@ namespace NHibernate.Linq.Visitors
 			return result;
 		}
 
+		protected override Expression VisitSubQueryExpression(SubQueryExpression expression)
+		{
+			expression.QueryModel.TransformExpressions(VisitExpression);
+			return expression;
+		}
+
 		// We would usually get NULL if one of our inner member expresions was null.
 		// However, it's possible a method call will convert the null value from the failed join into a non-null value.
 		// This could be optimized by actually checking what the method does.  For example StartsWith("s") would leave null as null and would still allow us to inner join.
@@ -303,7 +310,8 @@ namespace NHibernate.Linq.Visitors
 				// Don't add joins for things like a.B == a.C where B and C are entities.
 				// We only need to join B when there's something like a.B.D.
 				var key = ExpressionKeyVisitor.Visit(expression, null);
-				if (_memberExpressionDepth > 0)
+				if (_memberExpressionDepth > 0 &&
+					_joiner.CanAddJoin(expression))
 				{
 					result = _joiner.AddJoin(result, key);
 				}
