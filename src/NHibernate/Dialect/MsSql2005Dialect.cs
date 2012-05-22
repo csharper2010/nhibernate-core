@@ -2,6 +2,7 @@ using System.Data;
 using NHibernate.Driver;
 using NHibernate.Mapping;
 using NHibernate.SqlCommand;
+using NHibernate.Dialect.Function;
 
 namespace NHibernate.Dialect
 {
@@ -32,6 +33,13 @@ namespace NHibernate.Dialect
 			base.RegisterKeywords();
 			RegisterKeyword("xml");
 		}
+
+        protected override void RegisterFunctions()
+        {
+            base.RegisterFunctions();
+            RegisterFunction("extract", new SQLFunctionTemplate(NHibernateUtil.Int32, "datepart(?1, ?3)"));
+            RegisterFunction("bit_length", new SQLFunctionTemplate(NHibernateUtil.Int32, "datalength(?1) * 8"));
+        }
 
 		public override SqlString GetLimitString(SqlString queryString, SqlString offset, SqlString limit)
 		{
