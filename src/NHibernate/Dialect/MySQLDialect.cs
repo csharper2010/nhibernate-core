@@ -451,6 +451,9 @@ namespace NHibernate.Dialect
 			get { return "create temporary table if not exists"; }
 		}
 
+		/// <inheritdoc />
+		public override string DropTemporaryTableString => "drop temporary table";
+
 		protected virtual void RegisterCastTypes()
 		{
 			// According to the MySql documentation (http://dev.mysql.com/doc/refman/4.1/en/cast-functions.html)
@@ -529,6 +532,16 @@ namespace NHibernate.Dialect
 		/// connection strings inside the same transaction are not currently supported.
 		/// </remarks>
 		public override bool SupportsConcurrentWritingConnectionsInSameTransaction => false;
+
+		/// <inheritdoc />
+		/// <remarks><see langword="true" /> by default for MySQL,
+		/// <see href="https://dev.mysql.com/doc/refman/8.0/en/string-literals.html" />.</remarks>
+		protected override bool EscapeBackslashInStrings { get; set; } = true;
+
+		/// <inheritdoc />
+		/// <remarks><see langword="true" /> by default for MySQL,
+		/// <see href="https://dev.mysql.com/doc/refman/8.0/en/string-literals.html" />.</remarks>
+		protected override bool UseNPrefixForUnicodeStrings => true;
 
 		#region Overridden informational metadata
 

@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using NHibernate.Engine;
 using NHibernate.SqlTypes;
 
@@ -13,11 +14,15 @@ namespace NHibernate.Type
 	[Serializable]
 	public class DecimalType : PrimitiveType, IIdentifierType
 	{
+		private static readonly object ZeroObject = 0m;
+
+		/// <summary />
 		public DecimalType()
 			: this(SqlTypeFactory.Decimal)
 		{
 		}
 
+		/// <summary />
 		public DecimalType(SqlType sqlType) : base(sqlType)
 		{
 		}
@@ -27,35 +32,18 @@ namespace NHibernate.Type
 			return Convert.ToDecimal(rs[index]);
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			return Convert.ToDecimal(rs[name]);
-		}
-
-		public override System.Type ReturnedClass
-		{
-			get { return typeof(Decimal); }
-		}
+		public override System.Type ReturnedClass => typeof(Decimal);
 
 		public override void Set(DbCommand st, object value, int index, ISessionImplementor session)
 		{
 			st.Parameters[index].Value = Convert.ToDecimal(value);
 		}
 
-		public override string Name
-		{
-			get { return "Decimal"; }
-		}
+		public override string Name => "Decimal";
 
-		public override System.Type PrimitiveClass
-		{
-			get { return typeof (Decimal); }
-		}
+		public override System.Type PrimitiveClass => typeof (Decimal);
 
-		public override object DefaultValue
-		{
-			get { return 0m; }
-		}
+		public override object DefaultValue => ZeroObject;
 
 		// Since 5.2
 		[Obsolete("This method has no more usages and will be removed in a future version.")]
@@ -66,7 +54,7 @@ namespace NHibernate.Type
 
 		public override string ObjectToSQLString(object value, Dialect.Dialect dialect)
 		{
-			return value.ToString();
+			return ((decimal)value).ToString(CultureInfo.InvariantCulture);
 		}
 
 		// 6.0 TODO: rename "xml" parameter as "value": it is not a xml string. The fact it generally comes from a xml

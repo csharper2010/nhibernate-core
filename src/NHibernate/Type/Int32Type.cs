@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
-using System.Data.Common;
-using NHibernate.Engine;
-using NHibernate.SqlTypes;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Globalization;
 using System.Numerics;
+using NHibernate.Engine;
+using NHibernate.SqlTypes;
 
 namespace NHibernate.Type
 {
@@ -16,25 +17,24 @@ namespace NHibernate.Type
 	[Serializable]
 	public partial class Int32Type : PrimitiveType, IDiscriminatorType, IVersionType
 	{
-		/// <summary></summary>
+		private static readonly object ZeroObject = 0;
+
+		/// <summary />
 		public Int32Type() : base(SqlTypeFactory.Int32)
 		{
 		}
 
 		/// <summary></summary>
-		public override string Name
-		{
-			get { return "Int32"; }
-		}
-
-		private static readonly Int32 ZERO = 0;
+		public override string Name => "Int32";
 
 		public override object Get(DbDataReader rs, int index, ISessionImplementor session)
 		{
 			try
 			{
-				return rs[index] switch
+				var value = rs[index];
+				return value switch
 				{
+					int _ => value,
 					BigInteger bi => (int) bi,
 					var c => Convert.ToInt32(c)
 				};
@@ -45,26 +45,7 @@ namespace NHibernate.Type
 			}
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			try
-			{
-				return rs[name] switch
-				{
-					BigInteger bi => (int) bi,
-					var c => Convert.ToInt32(c)
-				};
-			}
-			catch (Exception ex)
-			{
-				throw new FormatException(string.Format("Input string '{0}' was not in the correct format.", rs[name]), ex);
-			}
-		}
-
-		public override System.Type ReturnedClass
-		{
-			get { return typeof(Int32); }
-		}
+		public override System.Type ReturnedClass => typeof(Int32);
 
 		public override void Set(DbCommand rs, object value, int index, ISessionImplementor session)
 		{
@@ -105,26 +86,17 @@ namespace NHibernate.Type
 			return 1;
 		}
 
-		public IComparer Comparator
-		{
-			get { return Comparer<Int32>.Default; }
-		}
+		public IComparer Comparator => Comparer<Int32>.Default;
 
 		#endregion
 
-		public override System.Type PrimitiveClass
-		{
-			get { return typeof(Int32); }
-		}
+		public override System.Type PrimitiveClass => typeof(Int32);
 
-		public override object DefaultValue
-		{
-			get { return ZERO; }
-		}
+		public override object DefaultValue => ZeroObject;
 
 		public override string ObjectToSQLString(object value, Dialect.Dialect dialect)
 		{
-			return value.ToString();
+			return ((int)value).ToString(CultureInfo.InvariantCulture);
 		}
 	}
 }

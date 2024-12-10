@@ -10,12 +10,13 @@
 
 using System;
 using System.Collections;
-using System.Data.Common;
-using NHibernate.Engine;
-using NHibernate.SqlTypes;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Globalization;
 using System.Numerics;
+using NHibernate.Engine;
+using NHibernate.SqlTypes;
 
 namespace NHibernate.Type
 {
@@ -23,8 +24,6 @@ namespace NHibernate.Type
 	using System.Threading;
 	public partial class Int16Type : PrimitiveType, IDiscriminatorType, IVersionType
 	{
-
-		#region IVersionType Members
 
 		public virtual Task<object> NextAsync(object current, ISessionImplementor session, CancellationToken cancellationToken)
 		{
@@ -57,7 +56,5 @@ namespace NHibernate.Type
 				return Task.FromException<object>(ex);
 			}
 		}
-
-		#endregion
 	}
 }

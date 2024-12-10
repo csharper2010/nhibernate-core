@@ -11,13 +11,12 @@ namespace NHibernate.Type
 	[Serializable]
 	public abstract class AbstractCharType : PrimitiveType, IDiscriminatorType
 	{
-		public AbstractCharType(SqlType sqlType)
-			: base(sqlType) {}
-
-		public override object DefaultValue
+		/// <summary />
+		public AbstractCharType(SqlType sqlType) : base(sqlType)
 		{
-			get { throw new NotSupportedException("not a valid id type"); }
 		}
+
+		public override object DefaultValue => throw new NotSupportedException("not a valid id type");
 
 		public override object Get(DbDataReader rs, int index, ISessionImplementor session)
 		{
@@ -30,20 +29,9 @@ namespace NHibernate.Type
 			return '\0'; // This line should never be executed
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			return Get(rs, rs.GetOrdinal(name), session);
-		}
+		public override System.Type PrimitiveClass => typeof(char);
 
-		public override System.Type PrimitiveClass
-		{
-			get { return typeof(char); }
-		}
-
-		public override System.Type ReturnedClass
-		{
-			get { return typeof(char); }
-		}
+		public override System.Type ReturnedClass => typeof(char);
 
 		public override void Set(DbCommand cmd, object value, int index, ISessionImplementor session)
 		{
@@ -51,9 +39,7 @@ namespace NHibernate.Type
 		}
 
 		public override string ObjectToSQLString(object value, Dialect.Dialect dialect)
-		{
-			return '\'' + value.ToString() + '\'';
-		}
+			=> dialect.ToStringLiteral(value.ToString(), SqlType);
 
 		// 6.0 TODO: rename "xml" parameter as "value": it is not a xml string. The fact it generally comes from a xml
 		// attribute value is irrelevant to the method behavior.

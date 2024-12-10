@@ -208,6 +208,7 @@ namespace NHibernate.Dialect
 			DefaultCastLength = PropertiesHelper.GetInt32(Environment.QueryDefaultCastLength, settings, 4000);
 			DefaultCastPrecision = PropertiesHelper.GetByte(Environment.QueryDefaultCastPrecision, settings, null) ?? 29;
 			DefaultCastScale = PropertiesHelper.GetByte(Environment.QueryDefaultCastScale, settings, null) ?? 10;
+			EscapeBackslashInStrings = PropertiesHelper.GetBoolean(Environment.EscapeBackslashInStrings, settings, EscapeBackslashInStrings);
 		}
 
 		#endregion
@@ -717,28 +718,28 @@ namespace NHibernate.Dialect
 
 		/// <summary> 
 		/// Does the dialect require that temporary table DDL statements occur in
-		/// isolation from other statements?  This would be the case if the creation
+		/// isolation from other statements? This would be the case if the creation
 		/// would cause any current transaction to get committed implicitly.
-		///  </summary>
-		/// <returns> see the result matrix above. </returns>
+		/// </summary>
+		/// <returns>See the result matrix in the remarks.</returns>
 		/// <remarks>
-		/// JDBC defines a standard way to query for this information via the
-		/// {@link java.sql.DatabaseMetaData#dataDefinitionCausesTransactionCommit()}
-		/// method.  However, that does not distinguish between temporary table
-		/// DDL and other forms of DDL; MySQL, for example, reports DDL causing a
-		/// transaction commit via its driver, even though that is not the case for
-		/// temporary table DDL.
-		/// <p/>
-		/// Possible return values and their meanings:<ul>
-		/// <li>{@link Boolean#TRUE} - Unequivocally, perform the temporary table DDL in isolation.</li>
-		/// <li>{@link Boolean#FALSE} - Unequivocally, do <b>not</b> perform the temporary table DDL in isolation.</li>
-		/// <li><i>null</i> - defer to the JDBC driver response in regards to {@link java.sql.DatabaseMetaData#dataDefinitionCausesTransactionCommit()}</li>
-		/// </ul>
+		/// Possible return values and their meanings:
+		/// <list type="bullet">
+		/// <item>
+		/// <term><see langword="true" /></term>
+		/// <description>Unequivocally, perform the temporary table DDL in isolation.</description>
+		/// </item>
+		/// <item>
+		/// <term><see langword="false" /></term>
+		/// <description>Unequivocally, do <b>not</b> perform the temporary table DDL in isolation.</description>
+		/// </item>
+		/// <item>
+		/// <term><see langword="null" /></term>
+		/// <description>Defer to <see cref="Cfg.Settings.IsDataDefinitionImplicitCommit" />.</description>
+		/// </item>
+		/// </list>
 		/// </remarks>
-		public virtual bool? PerformTemporaryTableDDLInIsolation()
-		{
-			return null;
-		}
+		public virtual bool? PerformTemporaryTableDDLInIsolation() => null;
 
 		/// <summary> Do we need to drop the temporary table after use? </summary>
 		public virtual bool DropTemporaryTableAfterUse()
@@ -1352,14 +1353,6 @@ namespace NHibernate.Dialect
 		public virtual CaseFragment CreateCaseFragment()
 		{
 			return new ANSICaseFragment(this);
-		}
-
-		/// <summary> The SQL literal value to which this database maps boolean values. </summary>
-		/// <param name="value">The boolean value </param>
-		/// <returns> The appropriate SQL literal. </returns>
-		public virtual string ToBooleanValueString(bool value)
-		{
-			return value ? "1" : "0";
 		}
 
 		internal static void ExtractColumnOrAliasNames(SqlString select, out List<SqlString> columnsOrAliases, out Dictionary<SqlString, SqlString> aliasToColumn, out Dictionary<SqlString, SqlString> columnToAlias)
@@ -2076,6 +2069,55 @@ namespace NHibernate.Dialect
 
 		#endregion
 
+		#region Literals support
+
+		/// <summary>The SQL literal value to which this database maps boolean values.</summary>
+		/// <param name="value">The boolean value.</param>
+		/// <returns>The appropriate SQL literal.</returns>
+		public virtual string ToBooleanValueString(bool value)
+			=> value ? "1" : "0";
+
+		/// <summary>
+		/// <see langword="true" /> if the database needs to have backslash escaped in string literals.
+		/// </summary>
+		/// <remarks><see langword="false" /> by default in the base dialect, to conform to SQL standard.</remarks>
+		protected virtual bool EscapeBackslashInStrings { get; set; }
+
+		/// <summary>
+		/// <see langword="true" /> if the database needs to have Unicode literals prefixed by <c>N</c>.
+		/// </summary>
+		/// <remarks><see langword="false" /> by default in the base dialect.</remarks>
+		protected virtual bool UseNPrefixForUnicodeStrings => false;
+
+		/// <summary>The SQL string literal value to which this database maps string values.</summary>
+		/// <param name="value">The string value.</param>
+		/// <param name="type">The SQL type of the string value.</param>
+		/// <returns>The appropriate SQL string literal.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> or
+		/// <paramref name="type"/> is <see langword="null" />.</exception>
+		public virtual string ToStringLiteral(string value, SqlType type)
+		{
+			if (value == null)
+				throw new ArgumentNullException(nameof(value));
+			if (type == null)
+				throw new ArgumentNullException(nameof(type));
+
+			var literal = new StringBuilder(value);
+			if (EscapeBackslashInStrings)
+				literal.Replace(@"\", @"\\");
+
+			literal
+				.Replace("'", "''")
+				.Insert(0, '\'')
+				.Append('\'');
+
+			if (UseNPrefixForUnicodeStrings && (type.DbType == DbType.String || type.DbType == DbType.StringFixedLength))
+				literal.Insert(0, 'N');
+			return literal.ToString();
+		}
+
+		#endregion
+
 		#region Union subclass support
 
 		/// <summary> 
@@ -2470,6 +2512,9 @@ namespace NHibernate.Dialect
 		{
 			get { return "create table"; }
 		}
+
+		/// <summary>Command used to drop a temporary table.</summary>
+		public virtual string DropTemporaryTableString => "drop table";
 
 		/// <summary> 
 		/// Get any fragments needing to be postfixed to the command for

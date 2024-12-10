@@ -66,11 +66,6 @@ namespace NHibernate.Type
 			}
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			return Get(rs, rs.GetOrdinal(name), session);
-		}
-
 		public override System.Type ReturnedClass
 		{
 			get { return typeof(DateTime); }
@@ -171,8 +166,6 @@ namespace NHibernate.Type
 		}
 
 		public override string ObjectToSQLString(object value, Dialect.Dialect dialect)
-		{
-			return "'" + ((DateTime)value).ToShortTimeString() + "'";
-		}
+			=> dialect.ToStringLiteral(((DateTime) value).ToShortTimeString(), SqlTypeFactory.GetAnsiString(50));
 	}
 }

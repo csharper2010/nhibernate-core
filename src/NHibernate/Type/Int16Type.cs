@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
-using System.Data.Common;
-using NHibernate.Engine;
-using NHibernate.SqlTypes;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Globalization;
 using System.Numerics;
+using NHibernate.Engine;
+using NHibernate.SqlTypes;
 
 namespace NHibernate.Type
 {
@@ -16,18 +17,16 @@ namespace NHibernate.Type
 	[Serializable]
 	public partial class Int16Type : PrimitiveType, IDiscriminatorType, IVersionType
 	{
-		/// <summary></summary>
+		private static readonly object ZeroObject = (short) 0;
+
+		/// <summary />
 		public Int16Type() : base(SqlTypeFactory.Int16)
 		{
 		}
 
 		/// <summary></summary>
-		public override string Name
-		{
-			get { return "Int16"; }
-		}
+		public override string Name => "Int16";
 
-		private static readonly Int16 ZERO = 0;
 		public override object Get(DbDataReader rs, int index, ISessionImplementor session)
 		{
 			try
@@ -44,26 +43,7 @@ namespace NHibernate.Type
 			}
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			try
-			{
-				return rs[name]switch
-				{
-					BigInteger bi => (short) bi,
-					var c => Convert.ToInt16(c)
-				};
-			}
-			catch (Exception ex)
-			{
-				throw new FormatException(string.Format("Input string '{0}' was not in the correct format.", rs[name]), ex);
-			}
-		}
-
-		public override System.Type ReturnedClass
-		{
-			get { return typeof(Int16); }
-		}
+		public override System.Type ReturnedClass => typeof(Int16);
 
 		public override void Set(DbCommand rs, object value, int index, ISessionImplementor session)
 		{
@@ -92,8 +72,6 @@ namespace NHibernate.Type
 			return Int16.Parse(xml);
 		}
 
-		#region IVersionType Members
-
 		public virtual object Next(object current, ISessionImplementor session)
 		{
 			return (Int16)((Int16)current + 1);
@@ -104,26 +82,15 @@ namespace NHibernate.Type
 			return (Int16)1;
 		}
 
-		public IComparer Comparator
-		{
-			get { return Comparer<Int16>.Default; }
-		}
+		public IComparer Comparator => Comparer<Int16>.Default;
 
-		#endregion
+		public override System.Type PrimitiveClass => typeof (Int16);
 
-		public override System.Type PrimitiveClass
-		{
-			get { return typeof (Int16); }
-		}
-
-		public override object DefaultValue
-		{
-			get { return ZERO; }
-		}
+		public override object DefaultValue => ZeroObject;
 
 		public override string ObjectToSQLString(object value, Dialect.Dialect dialect)
 		{
-			return value.ToString();
+			return ((short)value).ToString(CultureInfo.InvariantCulture);
 		}
 	}
 }

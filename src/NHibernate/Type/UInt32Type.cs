@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Numerics;
 using NHibernate.Engine;
 using NHibernate.SqlTypes;
@@ -16,18 +17,16 @@ namespace NHibernate.Type
 	[Serializable]
 	public partial class UInt32Type : PrimitiveType, IDiscriminatorType, IVersionType
 	{
-		/// <summary></summary>
+		private static readonly object ZeroObject = 0U;
+
+		/// <summary />
 		public UInt32Type() : base(SqlTypeFactory.UInt32)
 		{
 		}
 
 		/// <summary></summary>
-		public override string Name
-		{
-			get { return "UInt32"; }
-		}
+		public override string Name => "UInt32";
 
-		private static readonly UInt32 ZERO = 0;
 		public override object Get(DbDataReader rs, int index, ISessionImplementor session)
 		{
 			try
@@ -44,26 +43,7 @@ namespace NHibernate.Type
 			}
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			try
-			{
-				return rs[name] switch
-				{
-					BigInteger bi => (uint) bi,
-					var c => Convert.ToUInt32(c)
-				};
-			}
-			catch (Exception ex)
-			{
-				throw new FormatException(string.Format("Input string '{0}' was not in the correct format.", rs[name]), ex);
-			}
-		}
-
-		public override System.Type ReturnedClass
-		{
-			get { return typeof(UInt32); }
-		}
+		public override System.Type ReturnedClass => typeof(UInt32);
 
 		public override void Set(DbCommand rs, object value, int index, ISessionImplementor session)
 		{
@@ -104,26 +84,17 @@ namespace NHibernate.Type
 			return 1;
 		}
 
-		public IComparer Comparator
-		{
-			get { return Comparer<UInt32>.Default; }
-		}
+		public IComparer Comparator => Comparer<UInt32>.Default;
 
 		#endregion
 
-		public override System.Type PrimitiveClass
-		{
-			get { return typeof(UInt32); }
-		}
+		public override System.Type PrimitiveClass => typeof(UInt32);
 
-		public override object DefaultValue
-		{
-			get { return ZERO; }
-		}
+		public override object DefaultValue => ZeroObject;
 
 		public override string ObjectToSQLString(object value, Dialect.Dialect dialect)
 		{
-			return value.ToString();
+			return ((uint)value).ToString(CultureInfo.InvariantCulture);
 		}
 	}
 }

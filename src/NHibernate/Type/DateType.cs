@@ -21,11 +21,12 @@ namespace NHibernate.Type
 		// Since v5.0
 		[Obsolete("Use DateTime.MinValue.")]
 		public static readonly DateTime BaseDateValue = DateTime.MinValue;
-		private DateTime customBaseDate = _baseDateValue;
 
 		private static readonly DateTime _baseDateValue = DateTime.MinValue;
 
-		/// <summary>Default constructor</summary>
+		private object customBaseDate = _baseDateValue;
+
+		/// <summary />
 		public DateType() : base(SqlTypeFactory.Date)
 		{
 		}
@@ -93,8 +94,8 @@ namespace NHibernate.Type
 		public override object DefaultValue => customBaseDate;
 
 		/// <inheritdoc />
-		public override string ObjectToSQLString(object value, Dialect.Dialect dialect) =>
-			"\'" + ((DateTime)value).ToShortDateString() + "\'";
+		public override string ObjectToSQLString(object value, Dialect.Dialect dialect)
+			=> dialect.ToStringLiteral(((DateTime) value).ToShortDateString(), SqlTypeFactory.GetAnsiString(50));
 
 		// Since v5
 		[Obsolete("Its only parameter, BaseValue, is obsolete.")]

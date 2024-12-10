@@ -102,6 +102,7 @@ namespace NHibernate.Dialect
 
 			// If changing the default value, keep it in sync with OracleDataClientDriverBase.Configure.
 			UseNPrefixedTypesForUnicode = PropertiesHelper.GetBoolean(Environment.OracleUseNPrefixedTypesForUnicode, settings, false);
+
 			RegisterCharacterTypeMappings();
 			RegisterFloatingPointTypeMappings();
 		}
@@ -532,6 +533,11 @@ namespace NHibernate.Dialect
 			return name.Length > 30 ? name.Substring(1, (30) - (1)) : name;
 		}
 
+		/// <inheritdoc />
+		/// <remarks>Oracle does commit any pending transaction prior to executing any DDL,
+		/// included for temporary tables.</remarks>
+		public override bool? PerformTemporaryTableDDLInIsolation() => true;
+
 		public override bool DropTemporaryTableAfterUse()
 		{
 			return false;
@@ -560,6 +566,10 @@ namespace NHibernate.Dialect
 		// 30 before 12.1. https://stackoverflow.com/a/756569/1178314
 		/// <inheritdoc />
 		public override int MaxAliasLength => 30;
+
+		/// <inheritdoc />
+		/// <remarks>Returns the same value as <see cref="UseNPrefixedTypesForUnicode" />.</remarks>
+		protected override bool UseNPrefixForUnicodeStrings => UseNPrefixedTypesForUnicode;
 
 		#region Overridden informational metadata
 

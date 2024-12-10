@@ -391,6 +391,8 @@ namespace NHibernate.Util
 		/// <returns>
 		/// The NHibernate <see cref="IType"/> for the named property.
 		/// </returns>
+		// Since v5.6
+		[Obsolete("This method is not used and will be removed in a future version")]
 		public static IType ReflectedPropertyType(System.Type theClass, string name, string access)
 		{
 			System.Type propertyClass = ReflectedPropertyClass(theClass, name, access);
@@ -419,6 +421,8 @@ namespace NHibernate.Util
 		/// <param name="name">The name of the property/field to find in the class.</param>
 		/// <param name="accessorName">The name of the property accessor for the property.</param>
 		/// <returns>The <see cref="System.Type" /> for the named property.</returns>
+		// Since v5.6
+		[Obsolete("This method is not used and will be removed in a future version")]
 		public static System.Type ReflectedPropertyClass(string className, string name, string accessorName)
 		{
 			try
@@ -820,31 +824,18 @@ namespace NHibernate.Util
 			return foundMethod;
 		}
 
-		internal static object GetConstantValue(string qualifiedName)
-		{
-			return GetConstantValue(qualifiedName, null);
-		}
-
 		internal static object GetConstantValue(string qualifiedName, ISessionFactoryImplementor sfi)
 		{
 			string className = StringHelper.Qualifier(qualifiedName);
 
-			if (!string.IsNullOrEmpty(className))
-			{
-				System.Type t = System.Type.GetType(className);
+			if (string.IsNullOrEmpty(className))
+				return null;
 
-				if (t == null && sfi != null)
-				{
-					t = System.Type.GetType(sfi.GetImportedClassName(className));
-				}
+			var t = System.Type.GetType(sfi?.GetImportedClassName(className) ?? className);
 
-				if (t != null)
-				{
-					return GetConstantValue(t, StringHelper.Unqualify(qualifiedName));
-				}
-			}
-
-			return null;
+			return t == null
+				? null
+				: GetConstantValue(t, StringHelper.Unqualify(qualifiedName));
 		}
 
 		// Since v5

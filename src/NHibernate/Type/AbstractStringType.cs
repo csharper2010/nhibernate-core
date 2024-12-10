@@ -76,11 +76,6 @@ namespace NHibernate.Type
 			return Convert.ToString(rs[index]);
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			return Convert.ToString(rs[name]);
-		}
-
 		public override bool IsEqual(object x, object y)
 		{
 			return Comparer.Equals(x, y);
@@ -134,10 +129,9 @@ namespace NHibernate.Type
 
 		#region ILiteralType Members
 
+		/// <inheritdoc />
 		public string ObjectToSQLString(object value, Dialect.Dialect dialect)
-		{
-			return "'" + (string)value + "'";
-		}
+			=> dialect.ToStringLiteral((string)value, SqlType);
 
 		#endregion
 

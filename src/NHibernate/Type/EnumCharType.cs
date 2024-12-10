@@ -119,11 +119,6 @@ namespace NHibernate.Type
 			}
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			return Get(rs, rs.GetOrdinal(name), session);
-		}
-
 		public override string Name
 		{
 			get { return "enumchar - " + this.ReturnedClass.Name; }
@@ -171,8 +166,6 @@ namespace NHibernate.Type
 		}
 
 		public override string ObjectToSQLString(object value, Dialect.Dialect dialect)
-		{
-			return '\'' + GetValue(value).ToString() + '\'';
-		}
+			=> dialect.ToStringLiteral(GetValue(value).ToString(), SqlType);
 	}
 }

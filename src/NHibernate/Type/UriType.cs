@@ -54,11 +54,6 @@ namespace NHibernate.Type
 			return StringToObject(Convert.ToString(rs[index]));
 		}
 
-		public override object Get(DbDataReader rs, string name, ISessionImplementor session)
-		{
-			return StringToObject(Convert.ToString(rs[name]));
-		}
-
 		/// <inheritdoc />
 		public override string ToLoggableString(object value, ISessionFactoryImplementor factory)
 		{
@@ -84,9 +79,7 @@ namespace NHibernate.Type
 		}
 
 		public string ObjectToSQLString(object value, Dialect.Dialect dialect)
-		{
-			return "'" + ((Uri)value).OriginalString + "'";
-		}
+			=> dialect.ToStringLiteral(((Uri) value).OriginalString, SqlType);
 
 		/// <inheritdoc />
 		public override object Assemble(object cached, ISessionImplementor session, object owner)
