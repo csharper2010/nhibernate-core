@@ -113,8 +113,6 @@ namespace NHibernate.Hql
 		/// <returns>True if the query does contain collection fetched; false otherwise.</returns>
 		bool ContainsCollectionFetches { get; }
 
-		bool ContainsOrderByClause { get; }
-
 		bool IsManipulationStatement { get; }
 
 		// 6.0 TODO : replace by ILoader QueryLoader.

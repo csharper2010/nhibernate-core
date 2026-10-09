@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NHibernate.Event;
 using NHibernate.Hql;
+using NHibernate.Hql.Ast.ANTLR;
 using NHibernate.Type;
 using NHibernate.Util;
 
@@ -95,7 +96,7 @@ namespace NHibernate.Engine.Query
 			QueryParameters queryParametersToUse;
 			if (needsLimit)
 			{
-				if (Translators.Any(t => t.ContainsOrderByClause))
+				if (Translators.Any(t => (t as QueryTranslatorImpl)?.ContainsOrderByClause != false))
 					// in memory evaluation is only problematic if items are skipped or if there is an order by clause thus correctness is not ensured
 					Log.Warn("firstResult/maxResults specified on polymorphic query with order by; applying in memory!");
 				else if (queryParameters.RowSelection.FirstRow > 0)

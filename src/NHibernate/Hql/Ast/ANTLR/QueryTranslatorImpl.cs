@@ -341,7 +341,10 @@ namespace NHibernate.Hql.Ast.ANTLR
 			}
 		}
 
-		public bool ContainsOrderByClause
+		/// <summary>
+		/// Indicates whether the query contains an order by clause.
+		/// </summary>
+		internal bool ContainsOrderByClause
 		{
 			get
 			{
